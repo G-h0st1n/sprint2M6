@@ -13,7 +13,15 @@ public class StringProducerService {
     private KafkaTemplate<String,String> kafkaTemplate;
 
     public void sendMessage(String message){
-        kafkaTemplate.send("str-topic",message).whenComplete((result,ex) -> {
+
+        String topic;
+
+        if(message.contains(s: "meat")){
+            topic = "opc 1";
+        }else(
+                topic = "opc 2;"
+        )
+        kafkaTemplate.send(topic,"str-topic",message).whenComplete((result,ex) -> {
            if(ex != null){
                log.error("Error, al enviar el mensaje: {}",ex.getMessage());
            }
