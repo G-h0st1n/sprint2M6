@@ -12,19 +12,9 @@ public class StringProducerService {
     @Autowired
     private KafkaTemplate<String,String> kafkaTemplate;
 
-    public void sendMessage(String message){
-
-        int partition;
-
-        if(message.contains("menu")){
-            partition = 1; // listener2 (procesa y responde)
-        } else {
-            partition = 0; // listener1 (no responde)
-        }
-
-
+    public void sendMessage(String topic, int partition, String message){
         //kafkaTemplate.send("str-topic", partition, null, message)
-        kafkaTemplate.send("str-topic",partition,null, message).whenComplete((result,ex) -> {
+        kafkaTemplate.send(topic, partition, null, message).whenComplete((result,ex) -> {
             if(ex != null){
                 log.error("Error, al enviar el mensaje: {}",ex.getMessage());
             }
@@ -34,20 +24,7 @@ public class StringProducerService {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
+/* no se si este comentario es importante
 String topic;
         if(message.contains("te")){
             topic = "topic-2";
