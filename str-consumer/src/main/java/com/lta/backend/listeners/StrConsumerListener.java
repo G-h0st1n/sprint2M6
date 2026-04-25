@@ -16,27 +16,94 @@ public class StrConsumerListener {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
-    // STOCK TOPIC (no state changes)
+    // =========================
+    // STORE STOCK
+    // =========================
     @KafkaListener(topics = "store-stock", groupId = "store-group")
     public void handleStock(String message,
                             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition) {
 
         log.info("Stock event received: {} from partition {}", message, partition);
 
-        log.info("Processing stock event (NO STATE CHANGE in consumer)");
+        switch (partition) {
+            case 0:
+                log.info("ADD PRODUCT -> {}", message);
+                break;
+
+            case 1:
+                log.info("UPDATE STOCK -> {}", message);
+                break;
+
+            case 2:
+                log.info("DELETE PRODUCT -> {}", message);
+                break;
+
+            default:
+                log.warn("Unknown stock partition: {}", partition);
+        }
+
+        log.info("Stock event processed (async, no direct DB write)");
     }
 
-    // ORDERS TOPIC (no state changes)
+    // =========================
+    // STORE ORDERS
+    // =========================
     @KafkaListener(topics = "store-orders", groupId = "store-group")
     public void handleOrders(String message,
                              @Header(KafkaHeaders.RECEIVED_PARTITION) int partition) {
 
         log.info("Order event received: {} from partition {}", message, partition);
 
-        log.info("Processing order event (NO STATE CHANGE in consumer)");
+        String projectionMessage = "";
 
-        // optional: forward to projection topic
-        kafkaTemplate.send("store-projections",
-                "Order processed: " + message);
+        switch (partition) {
+            case 0:
+                log.info("NEW ORDER -> {}", message);
+                projectionMessage = "Order created: " + message;
+                break;
+
+            case 1:
+                log.info("CANCEL ORDER -> {}", message);
+                projectionMessage = "Order canceled: " + message;
+                break;
+
+            case 2:
+                log.info("CUSTOM ORDER -> {}", message);
+                projectionMessage = "Custom order: " + message;
+                break;
+
+            default:
+                log.warn("Unknown order partition: {}", partition);
+        }
+
+        // 🔥 EVENT-DRIVEN: enviamos a proyecciones
+        kafkaTemplate.send("store-projections", projectionMessage);
+
+        log.info("Order event processed and forwarded to projections");
+    }
+
+    // =========================
+    // STORE VIEWS (PROJECTIONS)
+    // =========================
+    @KafkaListener(topics = "store-projections", groupId = "store-group")
+    public void handleProjections(String message,
+                                  @Header(KafkaHeaders.RECEIVED_PARTITION) int partition) {
+
+        log.info("Projection event received: {} from partition {}", message, partition);
+
+        switch (partition) {
+            case 0:
+                log.info("UPDATE PRODUCT CATALOG VIEW");
+                break;
+
+            case 1:
+                log.info("UPDATE ORDER STATUS VIEW");
+                break;
+
+            default:
+                log.info("General projection update");
+        }
+
+        log.info("Projection processed (read model updated)");
     }
 }

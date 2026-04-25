@@ -13,22 +13,13 @@ public class StringProducerService {
     private KafkaTemplate<String,String> kafkaTemplate;
 
     public void sendMessage(String topic, int partition, String message){
-        //kafkaTemplate.send("str-topic", partition, null, message)
-        kafkaTemplate.send(topic, partition, null, message).whenComplete((result,ex) -> {
-            if(ex != null){
-                log.error("Error, al enviar el mensaje: {}",ex.getMessage());
-            }
-            log.info("Mensaje enviado con exito: {}",result.getProducerRecord().value());
-            log.info("Particion {}, Offset {}", result.getRecordMetadata().partition(),result.getRecordMetadata().offset());
-        });
+        kafkaTemplate.send(topic, partition, null, message)
+                .whenComplete((result,ex) -> {
+                    if(ex != null){
+                        log.error("Error al enviar: {}",ex.getMessage());
+                    } else {
+                        log.info("Mensaje enviado: {}",result.getProducerRecord().value());
+                    }
+                });
     }
 }
-
-/* no se si este comentario es importante
-String topic;
-        if(message.contains("te")){
-            topic = "topic-2";
-        }else{
-            topic = "str-topic";
-        }
-*/

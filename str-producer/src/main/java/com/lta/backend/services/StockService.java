@@ -1,9 +1,12 @@
 package com.lta.backend.services;
 
+import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
+@Service
 public class StockService {
+
     private final Map<String, Integer> inventory = new HashMap<>();
 
     public void addProduct(String json) {
@@ -21,5 +24,4 @@ public class StockService {
     public Map<String, Integer> getInventory() {
         return inventory;
     }
-
 }

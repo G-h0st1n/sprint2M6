@@ -1,4 +1,5 @@
 package com.lta.backend.config;
+
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -19,17 +20,32 @@ public class KafkaAdminConfig {
     @Bean
     public KafkaAdmin kafkaAdmin(){
         var configs = new HashMap<String,Object>();
-        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,kafkaProperties.getBootstrapServers());
+        configs.put(
+                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
+                kafkaProperties.getBootstrapServers()
+        );
         return new KafkaAdmin(configs);
     }
 
-    // Crea automáticamente el tópico "str-topic" al iniciar la aplicación
+    // Creacion de topci
     @Bean
     public KafkaAdmin.NewTopics topics(){
         return new KafkaAdmin.NewTopics(
-            TopicBuilder.name("store-stock").partitions(3).replicas(1).build(),
-            TopicBuilder.name("store-orders").partitions(3).replicas(1).build(),
-            TopicBuilder.name("store-projections").partitions(2).build()
+
+                TopicBuilder.name("store-stock")
+                        .partitions(3)
+                        .replicas(1)
+                        .build(),
+
+                TopicBuilder.name("store-orders")
+                        .partitions(3)
+                        .replicas(1)
+                        .build(),
+
+                TopicBuilder.name("store-projections")
+                        .partitions(2)
+                        .replicas(1)
+                        .build()
         );
     }
 }
